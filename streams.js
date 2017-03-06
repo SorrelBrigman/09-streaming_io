@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 //gain access to the core module "stream"
 const {Readable, Writable, Transform } = require('stream');
-const {createReadStream, appendFile} = require('fs');
+const {createReadStream, writeFile} = require('fs');
 
 //grab argument from console
 let fileArg = process.argv[2];
@@ -30,7 +30,7 @@ transformStream._transform = (buffer, encoding, done) => {
 }
 
 writeStream._write = (buffer, _, done) => {
-  appendFile(destArg, buffer, 'utf8', (err) =>{
+  writeFile(destArg, buffer, 'utf8', (err) =>{
     if (err) throw err;
   })
   process.stdout.write(`wrote to file`);
