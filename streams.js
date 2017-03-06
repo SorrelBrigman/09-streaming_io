@@ -3,41 +3,50 @@
 const {Readable, Writable, Transform } = require('stream');
 const {createReadStream, writeFile} = require('fs');
 
-//grab argument from console
+//grab arguments from console
 let fileArg = process.argv[2];
 let destArg = process.argv[3];
 
-//create new instances of each of the stream classes below
+//create a read stream
 const readStream = createReadStream(fileArg);
+//create new instances of each of the stream classes below
 const writeStream = Writable();
 const transformStream = Transform();
 
-//define the inner methods
-
+//define the readStream so that on data
 readStream.on('data', buffer => {
     readStream.pause();
+    //the data is pushed along
     readStream.push(buffer);
-    console.log('buffer', buffer.toString());
+
 });
+//at the end of the data, push null to signify the end
 readStream.on('end', ()=> {
     readStream.push(null);
-    console.log("end of read");
+
 });
 
+//define the inner methods
 
 transformStream._transform = (buffer, encoding, done) => {
+  //take the data passed to it, convert it to a string,
+  //and then convert it to upper case
   done(null, `${buffer.toString().toUpperCase()}`)
 }
 
+  //take the data passed to it
 writeStream._write = (buffer, _, done) => {
+  //grab the destination file from the 2nd argument from the terminal
+  //and write the data received to the file passed to it
+  //**NOTE** using writeFile with overwrite the destination file to ONLY the data passed to it
   writeFile(destArg, buffer, 'utf8', (err) =>{
     if (err) throw err;
   })
-  process.stdout.write(`wrote to file`);
+
   done;
 }
 
 
-
+//take the data from the read stream, pass it to the transform stream and then
+//pass the transformed data to the write stream
 readStream.pipe(transformStream).pipe(writeStream);
-// readStream.pipe(writeStream);
